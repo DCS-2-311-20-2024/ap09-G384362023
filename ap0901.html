@@ -2,20 +2,32 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title> 応用プログラミング 第9,10回 自由課題 (ap0901)
-		</title>
+		<title> 応用プログラミング 第9,10回 自由課題 (ap0901)</title>
 		<style>
 		  body { margin: 0; background-color: #23a3a3; color: gold}
 
 		</style>
 	</head>
 	<body>
-		<div id="output">G38400-2023 拓殖 太郎</div>
+		<div id="output">G38436-2023 小林　イマデ千尋</div>
 		<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+		<div id="titleScreen" style="display: flex; flex-direction: column; justify-content: center; align-items: center; position: absolute; top: 0; left: 0; width: 100%; height: 100%; color: white; font-family: Arial, sans-serif; z-index: 10;">
+			<h1>Endless Runner</h1>
+			<button id="startButton" style="margin: 10px; padding: 10px 20px; font-size: 16px;">Start Game</button>
+			<!--<button id="settingsButton" style="margin: 10px; padding: 10px 20px; font-size: 16px;">Settings</button>-->
+		</div>
+
+		<div id="gameOverScreen" style="display: none; flex-direction: column; justify-content: center; align-items: center; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.3); color: white; font-family: Arial, sans-serif; z-index: 10;">
+			<h1>Game Over</h1>
+			<button id="menuButton" style="margin: 10px; padding: 10px 20px; font-size: 16px;">Start menu</button>
+		</div>
+
 		<script type="importmap"> {
 			"imports" : {
 				"three" : "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
 				"three/addons" : "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/Addons.js",
+                "three/addons/loaders/FBXLoader.js": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/FBXLoader.js",
 				"ili-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm"
 			}
 		} </script>
