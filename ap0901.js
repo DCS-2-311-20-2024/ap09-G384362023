@@ -16,7 +16,6 @@ function init() {
   const startButton = document.getElementById('startButton');
   const gameOverScreen = document.getElementById('gameOverScreen');
   const menuButton = document.getElementById('menuButton');
-  gameOverScreen.style.display = 'none';
 
   // スタートボタンのクリックイベント
   startButton.addEventListener('click', () => {
@@ -27,7 +26,7 @@ function init() {
   //ゲームオーバー: メニューボタンのクリックイベント
   menuButton.addEventListener('click', () => {
     gameOverScreen.style.display = 'none';
-    player.position.set(0, 0, 0); // 初期位置
+    player.position.set(0, 0.01, 0); // 初期位置
     titleScreen.style.display = 'flex';
   });
   
@@ -74,21 +73,24 @@ function init() {
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true; // 地面が影を受け取る
   scene.add(ground);
-  
+
+  //------------------------キャラクター関連----------------------------
   //キャラクター関数
   let player = null;      // キャラクター
   let mixer = null;       // キャラクターアニメーション
   let isJumping = false;  // ジャンプしているか
   let jumpVelocity = 0;   // ジャンプ速度
   let isFalling = false;  // 落ちてるかどうか
-  const moveSpeed = 0.08; // 移動速度
   let moveLeft = false;   // 左に移動
   let moveRight = false;  // 右に移動
   let jumpAction = null;  // ジャンプアニメーション
   let runAction = null;   // ランアニメーション
-  let dfltAction = null; // デフォルトアクション
+  let dfltAction = null;  // デフォルトアクション
 
-  const gravity = -0.012; // 重力
+  const raycaster = new THREE.Raycaster();
+  const downVector = new THREE.Vector3(0, -0.01, 0);
+  const moveSpeed = 0.08; // 移動速度
+  const gravity = -0.028; // 重力
 
   let animationId;
   const clock = new THREE.Clock();
@@ -127,13 +129,16 @@ function init() {
 
   //ジャンプ
   document.addEventListener('keydown', (event) => {
-    if (event.code === 'Space' && !isJumping) {
+    if (event.code === 'Space' && !isJumping && !isFalling) {
       isJumping = true;
-      jumpVelocity = 0.28;
+      jumpVelocity = 0.45;
       playAnimation(jumpAction);
     }
   });
   function playAnimation(action) {
+    if(dfltAction === action){
+      return;
+    }
     if (dfltAction !== action) {
       dfltAction.fadeOut(0.2);
     }
@@ -161,7 +166,9 @@ function init() {
       }
   });
 
+
   // キャラクターの更新
+
   function updatePlayer() {
 
     if (moveLeft && player.position.x > -7) { // 左の制限
@@ -171,39 +178,67 @@ function init() {
         player.position.x += moveSpeed;
     }
 
-    // 地面の端を超えた場合に落下を開始
-    if (player.position.x <= -5 || player.position.x >= 5 ) {
-        isFalling = true; // 落下状態に移行
-    }
+    // 落下処理------
 
-    // 落下処理
-    if (isFalling) {
-        player.position.y += gravity * 4; // 重力を適用
+    // Raycaster をキャラクターの現在位置に配置
+    const playerPosition = new THREE.Vector3(
+      player.position.x,
+      player.position.y + 0.5,
+      player.position.z
+    );
+    raycaster.set(playerPosition, downVector);
 
-        // 地面より下に落ちた場合はゲームオーバー
-        if (player.position.y < -5) { // 落下しきったらゲームオーバー
-            triggerGameOver();        // ゲームオーバー処理を呼び出し
-        }
-    }
+    // 地面との交差を取得
+    const intersects = raycaster.intersectObject(ground);
 
+    // 地面が見つかった場合
+    console.log(intersects.length===0);
+    
+
+    // ジャンプ中の処理
     if (isJumping) {
       player.position.y += jumpVelocity;
       jumpVelocity += gravity;
-
-      if (player.position.y <= 0) {
+      
+      if(intersects.length>0 && player.position.y<=0){
         player.position.y = 0;
-        isJumping = false;
         jumpVelocity = 0;
+        isJumping = false;
         playAnimation(runAction);
       }
+      
+    }
+    else if (intersects.length===0) {
+      isFalling = true;
+    }
+    else{
+      isFalling = false;
+    }
+    
+    if(isFalling){
+      player.position.y += jumpVelocity;
+      jumpVelocity += gravity/2;
     }
 
-    camera.position.x = player.position.x; // X座標を同期
-    camera.position.y = player.position.y + 2; // 少し上
-    camera.position.z = player.position.z + 7.5; // 後ろに配置
-    camera.lookAt(player.position); // キャラクターを注視
+    // 落下処理
+    if (player.position.y < -5) {
+      triggerGameOver();
+      jumpVelocity = 0;
+      isJumping = false;
+      playAnimation(runAction);
+      console.log('game over');
+    }
+
+    // カメラの追従
+    camera.position.x = player.position.x;
+    camera.position.y = player.position.y + 2;
+    camera.position.z = player.position.z + 7.5;
+    camera.lookAt(player.position);
+    
     
   }
+
+  //---------------------------------------------------------------------
 
 
 
