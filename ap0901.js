@@ -81,7 +81,8 @@ function init() {
   scene.add(ground);
   
   //空
-  scene.background = new THREE.Color(0x87CEEB);
+  const sky = textureLoader.load('sky_picture.jpg');
+  scene.background = sky;
 
   //-----------------------------------------------------------------
 
@@ -255,6 +256,7 @@ function init() {
   //----------------------------障害物の作成-------------------------------
 
   //障害物
+
   let objectsMax = 0;
   let objectInt = null; //clearIntercalを呼ぶための変数
   const objects = new THREE.Group();
@@ -263,7 +265,12 @@ function init() {
     const objectGeometry = new THREE.BoxGeometry(2,1,0.5);
     const objectMaterial = new THREE.MeshStandardMaterial({color: 0xc71585});
     const object = new THREE.Mesh(objectGeometry, objectMaterial);
-    object.position.set(Math.random()*8-5, -0.5, -20);
+    if (Math.random() < 0.5) {
+      object.position.set(Math.random() * -5, -0.5, -20); // 左側
+    } else {
+      object.position.set(Math.random() * 5, -0.5, -20);  // 右側
+    }
+
     object.castShadow = true;
     object.receiveShadow = false;
     objects.add(object);
@@ -274,7 +281,7 @@ function init() {
         if (carcome) {
           carcome2 = true;
         }
-      }, 1000);
+      }, 2000);
       
     }
     //console.log('make');
@@ -337,7 +344,12 @@ function init() {
     'car.fbx',
     (fbx) => {
       fbx.scale.set(0.01, 0.01, 0.01); // スケール調整
-      fbx.position.set(Math.random()*4-2, -0.5, -30);       // 初期位置を設定
+      if (Math.random() < 0.5) {
+        fbx.position.set(Math.random() * -5, -0.5, -30); // 左側
+      } else {
+        fbx.position.set(Math.random() * 5, -0.5, -30);  // 右側
+      }
+            // 初期位置を設定
       scene.add(fbx);
       fbx.visible = false;
       car = fbx;
