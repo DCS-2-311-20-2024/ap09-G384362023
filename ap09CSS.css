@@ -1,0 +1,93 @@
+/* ap09CSS.css */
+
+/* --- 全体のリセットと基本設定 --- */
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to bottom, #0d1a26, #09141b);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+
+/* --- タイトルスクリーン --- */
+#titleScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    justify-content: center;
+    gap: 20px;
+}
+
+#titleScreen h1 {
+    font-size: 4em;
+    color: #ffae00;
+    text-shadow: 0 0 10px #ffae00, 0 0 20px #ffae00, 0 0 40px #ffae00;
+}
+
+/* --- ボタンのスタイリング --- */
+button {
+    background: linear-gradient(90deg, #ffae00, #ff7300);
+    color: white;
+    font-size: 1.5em;
+    padding: 10px 30px;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 15px rgba(255, 115, 0, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    outline: none;
+    position: relative;  /* ボタンが前面に表示されるように */
+    z-index: 10;  /* ボタンを前面に */
+    pointer-events: auto; /* クリックを有効に */
+}
+
+button:hover {
+    background: linear-gradient(90deg, #ff7300, #ffae00);
+    box-shadow: 0 6px 20px rgba(255, 115, 0, 0.8);
+    transform: translateY(-4px);  /* 強調されたホバー */
+}
+
+/* --- ゲームオーバースクリーン --- */
+#gameOverScreen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 5; /* ゲームオーバー画面の重なり具合 */
+}
+
+#gameOverScreen h1 {
+    font-size: 4em;
+    color: #ff2e2e;
+    text-shadow: 0 0 10px #ff2e2e, 0 0 20px #ff2e2e, 0 0 40px #ff2e2e;
+}
+
+#menuButton {
+    background: linear-gradient(90deg, #ff2e2e, #ff7171);
+    color: white;
+    font-size: 1.5em;
+    padding: 10px 30px;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 15px rgba(255, 71, 71, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+#menuButton:hover {
+    background: linear-gradient(90deg, #ff7171, #ff2e2e);
+    box-shadow: 0 6px 20px rgba(255, 71, 71, 0.8);
+    transform: translateY(-4px);  /* 強調されたホバー */
+}
