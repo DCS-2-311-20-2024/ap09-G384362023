@@ -11,6 +11,8 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
 // ３Ｄページ作成関数の定義
 function init() {
+  //テクスチャーローダー
+  const textureLoader = new THREE.TextureLoader();
   // HTML要素を取得
   const titleScreen = document.getElementById('titleScreen');
   const startButton = document.getElementById('startButton');
@@ -20,6 +22,8 @@ function init() {
   // スタートボタンのクリックイベント
   startButton.addEventListener('click', () => {
     titleScreen.style.display = 'none'; // タイトル画面を非表示
+    gameOver = false;
+    startCreate();
     render(); // ゲーム開始
   });
 
@@ -56,6 +60,8 @@ function init() {
   renderer.shadowMap.enabled = true;
   renderer.setSize(window.innerWidth, innerHeight);
   document.getElementById("output").appendChild(renderer.domElement);
+  
+  //-------------------------world設定--------------------------------
 
   // 方向性ライト（影をキャストする光源）
   const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
@@ -73,6 +79,11 @@ function init() {
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true; // 地面が影を受け取る
   scene.add(ground);
+  
+  //空
+  scene.background = new THREE.Color(0x87CEEB);
+
+  //-----------------------------------------------------------------
 
   //------------------------キャラクター関連----------------------------
   //キャラクター関数
@@ -86,6 +97,7 @@ function init() {
   let jumpAction = null;  // ジャンプアニメーション
   let runAction = null;   // ランアニメーション
   let dfltAction = null;  // デフォルトアクション
+  let gameOver = false;   // ゲームオーバーかどうか
 
   const raycaster = new THREE.Raycaster();
   const downVector = new THREE.Vector3(0, -0.01, 0);
@@ -96,8 +108,8 @@ function init() {
   const clock = new THREE.Clock();
 
   // FBXモデルの読み込み
-  const loader = new FBXLoader();
-  loader.load(
+  const Fbxloader = new FBXLoader();
+  Fbxloader.load(
       'run_jump.fbx',
       (fbx) => {
           fbx.scale.set(0.01, 0.01, 0.01); // スケール調整
@@ -191,8 +203,8 @@ function init() {
     // 地面との交差を取得
     const intersects = raycaster.intersectObject(ground);
 
-    // 地面が見つかった場合
-    console.log(intersects.length===0);
+    // 地面が見つかった場合(デバック用)
+    //console.log(intersects.length===0);
     
 
     // ジャンプ中の処理
@@ -240,8 +252,130 @@ function init() {
 
   //---------------------------------------------------------------------
 
+  //----------------------------障害物の作成-------------------------------
+
+  //障害物
+  let objectsMax = 0;
+  let objectInt = null; //clearIntercalを呼ぶための変数
+  const objects = new THREE.Group();
+  scene.add(objects);
+  function createObject(){
+    const objectGeometry = new THREE.BoxGeometry(2,1,0.5);
+    const objectMaterial = new THREE.MeshStandardMaterial({color: 0xc71585});
+    const object = new THREE.Mesh(objectGeometry, objectMaterial);
+    object.position.set(Math.random()*8-5, -0.5, -20);
+    object.castShadow = true;
+    object.receiveShadow = false;
+    objects.add(object);
+    objectsMax+=1;
+    if(objectsMax===15){carcome = true;
+      carInt = setInterval(() => {
+
+        if (carcome) {
+          carcome2 = true;
+        }
+      }, 1000);
+      
+    }
+    //console.log('make');
+  }
 
 
+  function startCreate() {
+    if (!objectInt) {
+      objectInt = setInterval(() => {
+        if (objects.children.length <= 5 && !gameOver && !carcome) {
+          createObject();
+        }
+      }, 1000); // 1秒ごとに生成
+    }
+  }
+  
+  function stopCreate() {
+    if (objectInt) {
+      clearInterval(objectInt);
+      objectInt = null; // 変数をリセット
+    }
+  }
+  
+
+  //障害物の移動
+  function updateObject(){
+    objects.children.forEach(object => {
+      object.position.z += 0.2;
+      if(object.position.y <= 0.4) {
+        object.position.y += 0.1;
+      }
+      if(object.position.z > 4) {
+        scene.remove(object);
+        objects.remove(object);
+      }
+    });
+    
+  }
+
+  //障害物の当たり判定
+  function hitObject() {
+    objects.children.forEach((object) => {
+      const distance = player.position.distanceTo(object.position);
+      if(distance < 1) {
+        gameOver = true;
+        objects.remove(object);
+        triggerGameOver();
+      }
+    })
+    
+  }
+
+  //car追加
+  let carcome = false;
+  let carcome2 = false;
+  let car = null;
+  let carInt = null;
+
+  Fbxloader.load(
+    'car.fbx',
+    (fbx) => {
+      fbx.scale.set(0.01, 0.01, 0.01); // スケール調整
+      fbx.position.set(Math.random()*4-2, -0.5, -30);       // 初期位置を設定
+      scene.add(fbx);
+      fbx.visible = false;
+      car = fbx;
+      fbx.traverse((child) => {
+        if (child.isMesh) {
+            child.castShadow = true;    // 影をキャスト
+            child.receiveShadow = true; // 影を受け取る
+        }
+      });
+    }
+  );
+
+  function carAction(){
+    car.visible = true;
+    car.position.z += 0.5;
+    if(car.position.y <= 0) {
+      car.position.y += 0.1;
+    }
+    if(car.position.z > 4) {
+      car.visible = false;
+      objectsMax = 0;
+      clearInterval(carInt);
+      carcome = false;
+      carcome2 = false;
+      car.position.set(Math.random()*4-2, -0.5,-30);
+    }
+    car.traverse((car) => {
+      const cardistance = player.position.distanceTo(car.position);
+      if(cardistance < 1.2) {
+        gameOver = true;
+        car.visible = false;
+        triggerGameOver();
+      }
+    });
+    console.log('car');
+  }
+
+  //---------------------------------------------------------------------
 
 
   // ゲームオーバー処理
@@ -249,6 +383,29 @@ function init() {
     cancelAnimationFrame(animationId); // アニメーションを停止
     document.getElementById('gameOverScreen').style.display = 'flex'; // ゲームオーバー画面表示
     isFalling = false;
+    stopCreate();
+    resetGame();
+  }
+
+  //リセット
+  function resetGame() {
+    isJumping = false;
+    jumpVelocity = 0;
+    isFalling = false;
+    moveLeft = false;
+    moveRight = false;
+    playAnimation(runAction);
+
+    // オブジェクトグループをクリア
+    objects.children.forEach((object) => {
+      scene.remove(object); // シーンから削除
+    });
+    objects.clear();
+    objectsMax = 0;
+    car.visible = false;
+    car.position.set(Math.random()*4-2, -0.5,-30);
+    carcome = false;
+    carcome2 = false;
   }
 
 
@@ -269,6 +426,11 @@ function init() {
     }
 
     updatePlayer();
+    updateObject();
+    hitObject();
+    if(carcome2) {
+      carAction();
+    }
 
 
     // 描画
